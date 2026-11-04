@@ -198,6 +198,4 @@ La solución corresponde a las dos arquitecturas de un nodo del enunciado. No im
 
 El certificado y las claves se generan en cada despliegue y se excluyen de Git. También se excluyen las bases locales y los entornos virtuales. Se usa el mismo certificado de desarrollo para simplificar la demostración; en producción corresponderían certificados y secretos separados.
 
-## 8. Subir el trabajo a GitHub
 
-Las instrucciones para cargar esta carpeta al repositorio creado están en [docs/SUBIR_A_GITHUB.md](docs/SUBIR_A_GITHUB.md). Después de verificar los archivos y las pruebas, entregar en Aula el enlace del repositorio, no el ZIP.
