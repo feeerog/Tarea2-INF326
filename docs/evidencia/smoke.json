@@ -1,0 +1,22 @@
+{
+  "v1": {
+    "create_status": 201,
+    "redirect_status": 302,
+    "location": "https://usm.cl/",
+    "cache_control": "no-store, max-age=0",
+    "database_lookups_delta": 2,
+    "tls_verified": true,
+    "grpc_logged_delta": 2
+  },
+  "v2": {
+    "create_status": 201,
+    "redirect_status": 301,
+    "location": "https://usm.cl/",
+    "cache_control": "public, max-age=300",
+    "database_lookups_delta": 1,
+    "tls_verified": true,
+    "cache_hits_delta": 1,
+    "rate_limit_status": 429,
+    "rate_limit_remaining": "0"
+  }
+}

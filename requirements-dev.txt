@@ -1,0 +1,5 @@
+-r requirements.txt
+grpcio-tools==1.85.1
+pytest==9.2.0
+ruff==0.17.3
+PyYAML==6.0.3

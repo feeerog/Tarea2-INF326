@@ -1,0 +1,7 @@
+-c requirements.lock
+litestar==2.25.0
+grpcio==1.85.1
+protobuf==7.36.2
+uvicorn==0.54.0
+cryptography==50.0.2
+httpx==0.28.1

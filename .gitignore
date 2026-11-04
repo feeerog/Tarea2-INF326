@@ -1,0 +1,16 @@
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+data/
+certs/
+*.sqlite3
+*.sqlite3-*
+*.key
+.env
+.DS_Store
+Thumbs.db

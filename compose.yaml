@@ -1,0 +1,97 @@
+name: tarea2-inf326
+
+x-runtime: &runtime
+  image: tarea2-inf326:local
+  build:
+    context: .
+    target: runtime
+
+services:
+  certificates:
+    <<: *runtime
+    command: ["python", "scripts/generate_certs.py"]
+    volumes:
+      - certificates:/app/certs
+
+  log-service:
+    <<: *runtime
+    command: ["python", "-m", "shortener", "log"]
+    environment:
+      GRPC_BIND: "0.0.0.0:50051"
+      LOG_DB_PATH: "/app/data/log.sqlite3"
+    volumes:
+      - certificates:/app/certs:ro
+      - log-data:/app/data
+    depends_on:
+      certificates:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "scripts/healthcheck.py", "log"]
+      interval: 5s
+      timeout: 4s
+      retries: 10
+    restart: unless-stopped
+
+  shortener-v1:
+    <<: *runtime
+    command: ["python", "-m", "shortener", "v1"]
+    environment:
+      HTTP_HOST: "0.0.0.0"
+      BASE_URL: "https://localhost:8443"
+      DB_PATH: "/app/data/shortener_v1.sqlite3"
+      GRPC_TARGET: "log-service:50051"
+      GRPC_TIMEOUT_SECONDS: "0.5"
+    ports:
+      - "127.0.0.1:8443:8443"
+    volumes:
+      - certificates:/app/certs:ro
+      - v1-data:/app/data
+    depends_on:
+      log-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "scripts/healthcheck.py", "v1"]
+      interval: 5s
+      timeout: 4s
+      retries: 10
+    restart: unless-stopped
+
+  shortener-v2:
+    <<: *runtime
+    command: ["python", "-m", "shortener", "v2"]
+    environment:
+      HTTP_HOST: "0.0.0.0"
+      BASE_URL: "https://localhost:8444"
+      DB_PATH: "/app/data/shortener_v2.sqlite3"
+      RATE_LIMIT_PER_MINUTE: "${RATE_LIMIT_PER_MINUTE:-60}"
+      CACHE_TTL_SECONDS: "${CACHE_TTL_SECONDS:-60}"
+      BROWSER_CACHE_TTL_SECONDS: "${BROWSER_CACHE_TTL_SECONDS:-300}"
+    ports:
+      - "127.0.0.1:8444:8444"
+    volumes:
+      - certificates:/app/certs:ro
+      - v2-data:/app/data
+    depends_on:
+      certificates:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "scripts/healthcheck.py", "v2"]
+      interval: 5s
+      timeout: 4s
+      retries: 10
+    restart: unless-stopped
+
+  tests:
+    profiles: ["test"]
+    image: tarea2-inf326-tests:local
+    build:
+      context: .
+      target: test
+    # Pruebas aisladas: crean sus certificados, puertos y BD en /tmp.
+    command: ["python", "-m", "pytest", "-q"]
+
+volumes:
+  certificates:
+  log-data:
+  v1-data:
+  v2-data:

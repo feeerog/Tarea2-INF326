@@ -1,0 +1,18 @@
+[
+  {
+    "id": 2,
+    "event_id": "5c434171-2905-4062-8492-fd03d0093586",
+    "timestamp": "2026-11-04T03:32:37.380892Z",
+    "short_url": "https://localhost:8443/eRgfR",
+    "long_url": "https://usm.cl/",
+    "hash": "eRgfR"
+  },
+  {
+    "id": 1,
+    "event_id": "f7e8a8f7-ccdf-43bb-a8a5-5f6d7b713977",
+    "timestamp": "2026-11-04T03:32:37.371854Z",
+    "short_url": "https://localhost:8443/eRgfR",
+    "long_url": "https://usm.cl/",
+    "hash": "eRgfR"
+  }
+]

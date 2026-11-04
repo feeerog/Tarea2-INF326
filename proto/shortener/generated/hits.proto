@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package shortener.analytics;
+
+import "google/protobuf/timestamp.proto";
+
+service HitLogger {
+  rpc LogHit (UrlHit) returns (LogReply);
+  rpc Ping (PingRequest) returns (PingReply);
+}
+
+message UrlHit {
+  string event_id = 1;
+  google.protobuf.Timestamp timestamp = 2;
+  string short_url = 3;
+  string long_url = 4;
+  string hash = 5;
+}
+
+message LogReply { bool recorded = 1; }
+message PingRequest {}
+message PingReply { string status = 1; }
