@@ -5,7 +5,7 @@ Dos implementaciones ejecutables de un **URL shortener con Litestar**:
 - **Arquitectura 1:** HTTPS, redirección **302**, sin almacenamiento de redirecciones en el cliente, y servicio **gRPC/TLS** que registra las visitas en una base de datos propia.
 - **Arquitectura 2:** HTTPS, redirección **301**, **rate limiter de Litestar** y **caché de respuestas de Litestar** con TTL.
 
-La discusión solicitada y la respuesta al **bonus de identificadores distribuidos** están en [DISCUSION.md](DISCUSION.md). La correspondencia con cada requisito está en [docs/CUMPLIMIENTO.md](docs/CUMPLIMIENTO.md).
+La discusión solicitada y la respuesta al **bonus de identificadores distribuidos** están en [DISCUSION.md](DISCUSION.md). 
 
 ## Integrantes
 
