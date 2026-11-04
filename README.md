@@ -17,11 +17,11 @@ La discusión solicitada y la respuesta al **bonus de identificadores distribuid
 
 Repositorio: https://github.com/feeerog/Tarea2-INF326
 
-Entrega indicada en el enunciado: **domingo 22 de noviembre de 2026, hasta las 23:59**. Se entrega el enlace del repositorio en Aula.
+
 
 ## 1. Ejecución con Docker 
 
-**Requisitos:** Git y Docker con Compose v2. En Windows, iniciar Docker Desktop con contenedores Linux. No se necesita instalar Python en el host para esta opción. Se requiere Internet durante la primera construcción de la imagen.
+**Requisitos:** Git y Docker con Compose v2. 
 
 Abrir una terminal en la carpeta que contiene este README y `compose.yaml`:
 
@@ -104,27 +104,49 @@ En Linux/macOS, reemplazar `curl.exe` por `curl`. `-k` omite la validación úni
 
 ### Arquitectura 1
 
-```mermaid
-flowchart TD
-    N["Navegador"] -->|"HTTPS: POST o GET"| S["Litestar v1: 302"]
-    S --> D[("Shortener DB v1")]
-    S -->|"gRPC con TLS: UrlHit"| L["Servicio Log"]
-    L --> H[("Log DB")]
-```
+[Navegador] ──HTTPS: POST o GET──▶ [Litestar v1]
+                                      │
+                                      ├──guardar/consultar──▶ [Shortener DB v1]
+                                      │
+                                      ├──POST──▶ devolver URL corta
+                                      │
+                                      └──GET──▶ evento UrlHit {timestamp, URL}
+                                                        │ gRPC con TLS
+                                                        ▼
+                                                  [Servicio Log]
+                                                        │
+                                                        ▼
+                                                     [Log DB]
+
+[Litestar v1] ──HTTP 302, sin caché──▶ [Navegador] ──▶ URL original
 
 El cliente gRPC reutiliza un canal TLS y tiene un deadline de **0,5 segundos**. El logger confirma después de persistir el evento. Si no recibe confirmación, v1 registra el fallo y mantiene la redirección: es una decisión de disponibilidad con posible pérdida de analítica, explicada en la discusión. `event_id` permite deduplicar un mismo evento; no hay reintentos de aplicación ni cola durable.
 
 ### Arquitectura 2
 
-```mermaid
-flowchart TD
-    N["Navegador"] -->|"HTTPS"| R["RateLimitConfig"]
-    R -->|"cuota disponible"| C{"Respuesta en caché"}
-    R -->|"cuota agotada"| E["HTTP 429"]
-    C -->|"sí"| H["HTTP 301"]
-    C -->|"no"| D[("Shortener DB v2")]
-    D -->|"guardar respuesta; TTL"| H
-```
+[Navegador] ──HTTPS──▶ [RateLimitConfig]
+                             │
+                             ▼
+                    ¿Cuota disponible?
+                             │
+              ┌──── no ──────┴────── sí ────┐
+              ▼                            ▼
+         [HTTP 429]                [Procesar GET]
+                                           │
+                                           ▼
+                                ¿Respuesta en caché?
+                                           │
+                              ┌──── sí ────┴──── no ────┐
+                              ▼                         ▼
+                         [HTTP 301]           [Shortener DB v2]
+                                                        │
+                                                        ▼
+                                          [Guardar respuesta en caché]
+                                                        │ TTL
+                                                        ▼
+                                                   [HTTP 301]
+
+[HTTP 301] ──▶ [Navegador] ──▶ URL original
 
 - Cuota predeterminada: **60 peticiones por minuto por IP**, compartida por POST y GET. Incluye respuestas servidas desde caché. `/health`, `/stats` y `/schema` se excluyen para diagnóstico.
 - Caché del servidor: `@get(cache=True)`, `ResponseCacheConfig` y `MemoryStore`, **TTL 60 s**. Solo se almacenan respuestas GET 301. Las claves distinguen método, ruta y parámetros de consulta, según Litestar.
